@@ -1,2 +1,2 @@
-# Stronger-Hans-
+# Stronger-Hand-
 Building a stronger functional hand for Roboy
