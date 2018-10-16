@@ -8,20 +8,15 @@ Joint::Joint (int Magnetpin, int Sensor_ID)
 {
   magnetpin=Magnetpin;
   pinMode(magnetpin, OUTPUT);
-  digitalWrite(magnetpin, LOW);
+  analogWrite(magnetpin, 255);
   deviceaddress=Sensor_ID; //0b0001100 for first Sensor
   eeaddress=0x20;
   num= 2;
 }
 
 
-void Joint::lock_Joint (){
-      digitalWrite(magnetpin, HIGH);
-}
-
-
-void Joint::free_Joint (){
-      digitalWrite(magnetpin, LOW); 
+void Joint::lock_Joint (int a){
+      analogWrite(magnetpin,a);
 }
 
 bool Joint::readMemory(uint8_t deviceaddress, uint8_t eeaddress, byte* rdata, uint8_t num)
@@ -41,13 +36,13 @@ bool Joint::readMemory(uint8_t deviceaddress, uint8_t eeaddress, byte* rdata, ui
 }
 
 
-float Joint::getJoint_angle() //returns the angle of the sensor at joint j on finger i in degree°
+float Joint::get_Joint_angle() //returns the angle of the sensor at joint j on finger i in degree°
 {
     readMemory(deviceaddress, eeaddress, rdata, num); // reads the angle in the pointer rdata
     
     byte l = rdata[0]&15; //  deletes the first 4 bit (not useful data) with 0000 1111 
-    float angle=(uint16_t)((l<<8)|rdata[1]);
-    angle=angle/4096*360; // converts the bitvalue in degree
+    float anglebit=(uint16_t)((l<<8)|rdata[1]);
+    float angle=anglebit/4096*360; // converts the bitvalue in degree
     return angle;
 }
  

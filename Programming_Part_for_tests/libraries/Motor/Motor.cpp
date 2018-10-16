@@ -9,119 +9,161 @@ Motor::Motor(int Motorpin, int Analog_Motorpin)
  motorpin=Motorpin; 
  analog_motorpin=Analog_Motorpin;
  analogReference(EXTERNAL); 
- 
-  servo.attach(motorpin);
-  servo_speed = 90; 
+ servo.attach(motorpin); 
 }
 
-//float Motor::get_Motor_angle_for_Joint_Angle( Joint joint)
-  //{
-  //joint.getJoint_angle();
-  //delay(10);
-  //float analogRead(analog_motorpin);
-  //}
 
-void Motor::drive_Motor_until (int angle_desired, Joint joint)
-    { 
+float get_Motor_angle()
+{
+  float b;//=analogRead(analog_motorpin);
+  float b_degree=(b/1024*360)/10;
+  b_degree=(int)(b_degree)*10;
+  return b_degree;
+}
+
+    
+//int Motor::get_Tendon_Force()
+//{
+//get the way of deflection from Potentiometer
+//return int
+//}
+
+
+
+void Motor::drive_Motor(int velocity)
+{
+servo.write(velocity);
+}
+
+
+
+void Motor::drive_Motor_until_Jdegree (int angle_desired, Joint joint) //velocity=100 und 89
+{ 
+  int velocity;
+  int d=joint.get_Joint_angle();
+  if(d>angle_desired)
+  {
+    velocity=89;
+  }else if(d<angle_desired)
+   {
+    velocity=100;
+   }
+
+  while ( d!=angle_desired)
+  {
+    servo.write (velocity); // negative acceleration: if diff = 45° the servo drives with speed 0 (fastest) , if diff = 0° the servo stops
+    d=joint.get_Joint_angle();    
+  }
+  servo.write (95);  
+}
+
+    
+
+void Motor::drive_Motor_until_Mdegree (int degree) //Possible to drive forward and backward to a certain Motor position
+{ 
+  int velocity;
+  float d=get_Motor_angle();
+
+  if(d>degree)
+  {
+    velocity=100;
+  }else if(d<degree)
+   {
+    velocity=89;
+   }
+
+   
+  while ( d!=degree)
+  {
+    servo.write (velocity); // negative acceleration: if diff = 45° the servo drives with speed 0 (fastest) , if diff = 0° the servo stops
+    d=get_Motor_angle();  
+  }
+  servo.write (95);
+}
+
+
+void Motor::drive_Motor_for_Jdegree (int angle_desired, Joint joint)
+{
+  float d1=joint.get_Joint_angle();
+  Serial.println (d1);
+  float d2=d1+angle_desired;
+  Serial.println (d2);
+
+  if(d2>45)
+  {
+    d2=45;
+  }else if( d2<0)
+   {
+     d2=0;
+   }
+  Serial.println (d2);
+  drive_Motor_until_Jdegree (d2, joint);
+}
+
+
+void Motor::drive_Motor_for_Mdegree (int degree)
+{
+  float d1=get_Motor_angle();
+  Serial.println (d1);
+  float d2=d1-degree;
+  Serial.println (d2);
+
+  if(d2>340)
+  {
+    d2=d2-340;
+  }else if( d2<20)
+   {
+     d2=340+d2;
+   }
+  Serial.println (d2);
+  drive_Motor_until_Mdegree (d2);
+}
+
+
+void Motor::drive_Motor_for_Sek (int Sekunden, int velocity){
+  int a1=millis();
+      int a2= a1+Sekunden;
+      int a=0;
       
-      int diff= angle_desired - joint.getJoint_angle();
-
-      while ( diff!=0){
-        
-        
-          servo.write (90-2*diff); // negative acceleration: if diff = 45° the servo drives with speed 0 (fastest) , if diff = 0° the servo stops
-          diff= angle_desired - joint.getJoint_angle();//calculates the difference between the desired angle and the current angle of the joint
-          delay(1);   
-       }
-      servo.write (90);
-       
-    }
-
-
-void Motor::drive_Motor_until (int angle_desired, Joint joint1, Joint joint2) {//moves the motor until one common angle 
- 
-  int diff1= angle_desired - joint1.getJoint_angle();
-  int diff2= angle_desired - joint2.getJoint_angle();
-  int mindiff=min(diff1,diff2);
-
+      while ( a < a2){
+          servo.write (velocity); 
+          a=millis();   
+      }
+      servo.write (95);
       
-      while( diff1!=0 || diff2!=0){
-          
-          servo.write (90-2*mindiff);
-          
-          diff1= angle_desired - joint1.getJoint_angle();
-          diff2= angle_desired - joint2.getJoint_angle();
-          
-          delay(1);
-       
+}
 
-        if(diff1 ==0){
-          joint1.lock_Joint();
-          mindiff=diff2;
-          
-        }else if (diff2==0){
-          joint2.lock_Joint();
-          mindiff=diff1; 
-          }else{
-           mindiff=min(diff1,diff2);
+void Motor::drive_Motor_until_S(int velocity)
+{
+      Serial.println( "for Stop write: S");
+      int a=1;
+
+      while (a=1)
+      { 
+        if (Serial.available())
+        {
+          if(Serial.read()=='S')
+          {
+            break;
           }
-          
-        delay(1);
-        
         }
-      servo.write (90);
+        servo.write (velocity);
+      }
+      servo.write (95);
+}
 
-    }
+//void Motor::drive_Motor_until_contact(int velocity)
+   // {
+      //int F=get_Tendon_Force();
+      //while (F!=//Value Contact Measured Force+Toleranzwert){
+          //servo.write (velocity);
+          //F=get_Tendon_Force();
+    //}
 
-void Motor::drive_Motor_until (int angle_desired, Joint joint1, Joint joint2, Joint joint3){ //moves the motor until one common angle 
- 
-  int diff1= angle_desired - joint1.getJoint_angle();
-  int diff2= angle_desired - joint2.getJoint_angle();
-  int diff3= angle_desired - joint3.getJoint_angle();
-  int mindiff= min (min (diff1, diff2),diff3);
-
-      
-      while( diff1!=0 || diff2!=0 || diff3!=0){
-        
-          servo. write (90-2*mindiff);
-          
-          diff1= angle_desired - joint1.getJoint_angle();
-          diff2= angle_desired - joint2.getJoint_angle();
-          diff3= angle_desired - joint3.getJoint_angle();
-         
-          delay(1);
-
-        if(diff1 ==0){
-          joint1.lock_Joint ();
-          if(diff2==0){
-            joint2.lock_Joint();
-            mindiff=diff3;
-          }else if (diff3==0){
-            joint3.lock_Joint();
-            mindiff=diff2;
-          }else{
-             mindiff= min (diff2,diff3);
-             }
-          
-        }else if (diff2==0){
-          joint2.lock_Joint();
-          if (diff3==0){
-            joint3.lock_Joint();
-            mindiff=diff1;
-          }else{
-            mindiff= min (diff1,diff3);
-            }
-          
-        }else if (diff3==0){
-           joint2.lock_Joint();
-           mindiff= min (diff1, diff2);
-        }else{
-           mindiff= min (min (diff1, diff2),diff3);
-           }  
-        delay(1);
-        
-        }
-
-    servo.write (90);
-
- }
+//void Motor::drive_Motor_until_Force(int Force, int velocity)
+   // {
+      //int F=get_Tendon_Force();
+      //while (F<Force){
+          //servo.write (velocity);
+          //F=get_Tendon_Force();
+    //}

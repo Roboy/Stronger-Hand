@@ -17,10 +17,9 @@ class Joint
     
   public:
     Joint (int Magnetpin,int Sensor_ID );
-    void lock_Joint ();
-    void free_Joint ();
+    void lock_Joint (int a);
     bool readMemory(uint8_t deviceaddress, uint8_t eeaddress, byte* rdata, uint8_t num);
-    float getJoint_angle();
+    float get_Joint_angle();
     
     
 };

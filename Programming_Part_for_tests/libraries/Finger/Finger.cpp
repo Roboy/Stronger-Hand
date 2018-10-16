@@ -14,79 +14,61 @@ Finger::Finger( Joint _JointMCP, Joint _JointPIP, Joint _JointDIP, Motor Motor):
 {}
 
 
-void Finger::Finger_Underactuated(){
-    JointMCP.free_Joint();
-    JointPIP.free_Joint();
-    JointDIP.free_Joint();
+void Finger::Finger_unlockAll(){
+    JointMCP.lock_Joint(0);
+    JointPIP.lock_Joint(0);
+    JointDIP.lock_Joint(0);
 }
 
-void Finger::Finger_ArretAll(){
-    JointMCP.lock_Joint();
-    JointPIP.lock_Joint();
-    JointDIP.lock_Joint();
+void Finger::Finger_lockAll(){
+    JointMCP.lock_Joint(255);
+    JointPIP.lock_Joint(255);
+    JointDIP.lock_Joint(255);
 }
 
-void Finger::Finger_free_DIP_PIP(){
-    JointMCP.lock_Joint();
-    JointPIP.free_Joint();
-    JointDIP.free_Joint();
-}
-void Finger::Finger_free_PIP_MCP(){
-    JointMCP.free_Joint();
-    JointPIP.free_Joint();
-    JointDIP.lock_Joint();
-} 
-void Finger::Finger_free_MCP(){
-    JointMCP.free_Joint();
-    JointPIP.lock_Joint();
-    JointDIP.lock_Joint();
-}
-void Finger::Finger_free_PIP(){
-    JointMCP.lock_Joint();
-    JointPIP.free_Joint();
-    JointDIP.lock_Joint();
-}
-void Finger::Finger_free_DIP(){
-    JointMCP.lock_Joint();
-    JointPIP.lock_Joint();
-    JointDIP.free_Joint();
+
+
+void Finger::open_Finger(int velocity)
+{
+  Finger_unlockAll();
+  
+  float p1=JointMCP.get_Joint_angle();
+  float p2=JointPIP.get_Joint_angle();
+  float p3=JointDIP.get_Joint_angle();
+
+  while( p1>0 || p2>0 || p3>0)
+  {
+    motor.drive_Motor(velocity);
+    p1=JointMCP.get_Joint_angle();
+    p2=JointPIP.get_Joint_angle();
+    p3=JointDIP.get_Joint_angle(); 
+    
+  }
 }
 
 
 
 void Finger::move_oneJoint_until( Joint joint, int desired_angle){
 
-
-  if (&joint==&JointMCP) {
-      Finger_free_MCP();
-  }else if(&joint==&JointPIP){
-      Finger_free_PIP();
-  }else if(&joint==&JointDIP){
-      Finger_free_DIP();
-  }
+  Finger_lockAll();
+  joint.lock_Joint(0);
   
-  motor.drive_Motor_until ( desired_angle, joint);
-  joint.lock_Joint();
+  motor.drive_Motor_until_Jdegree (desired_angle, joint);
+  joint.lock_Joint(255);
 }
 
 
-void Finger::move_allJoints_until(int desired_angle){
-  Finger_Underactuated();
-  motor.drive_Motor_until (desired_angle, JointMCP, JointPIP, JointDIP);
-  Finger_ArretAll();
+void Finger::move_oneJoint_until_S(Joint joint, int velocity)
+{
+  Finger_lockAll();
+  joint.lock_Joint(0);
+
+  motor.drive_Motor_until_S(velocity);
+  joint.lock_Joint(255);
 }
 
-void Finger::move_twoJoints_until(Joint joint1, Joint joint2, int desired_angle){
-   if( &joint1 !=&JointMCP && &joint2 !=&JointMCP){
-    Finger_free_DIP_PIP();
-   }else if (&joint1 != &JointDIP && &joint2 !=&JointDIP){
-    Finger_free_PIP_MCP();
-   }else {
-    false;
-   }
-   motor.drive_Motor_until ( desired_angle, joint1, joint2);
-   Finger_ArretAll();
-   
-}
+
+
+
 
   
