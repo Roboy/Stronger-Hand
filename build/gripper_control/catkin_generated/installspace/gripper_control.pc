@@ -1,0 +1,8 @@
+prefix=/home/roboy/workspace/Stronger-Hand/install
+
+Name: gripper_control
+Description: Description of gripper_control
+Version: 0.0.0
+Cflags: -I/home/roboy/workspace/Stronger-Hand/install/include
+Libs: -L/home/roboy/workspace/Stronger-Hand/install/lib 
+Requires: message_runtime

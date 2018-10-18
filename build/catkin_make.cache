@@ -1,0 +1,2 @@
+gripper_control
+-DCATKIN_DEVEL_PREFIX=/home/roboy/workspace/Stronger-Hand/devel -DCMAKE_INSTALL_PREFIX=/home/roboy/workspace/Stronger-Hand/install -G Unix Makefiles
